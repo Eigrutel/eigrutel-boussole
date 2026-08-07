@@ -21,7 +21,6 @@
 }
 
 *{box-sizing:border-box;}
-
 html{scroll-behavior:smooth;}
 
 body{
@@ -137,9 +136,7 @@ h1{
   color:#fff;
 }
 
-/* =========================================================
-   CAPTURES / SCREENSHOTS
-   ========================================================= */
+/* Captures / Screenshots */
 
 .gallery{
   display:flex;
@@ -172,27 +169,23 @@ h1{
   text-align:center;
 }
 
-/* Vue principale : interface desktop en pleine largeur. */
-.shot-main{
+/* Les deux captures larges : desktop FR + PDF. */
+
+.wide-shots{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:20px;
   width:100%;
 }
 
 /* Les deux captures mobiles sont regroupées et centrées. */
+
 .mobile-shots{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:20px;
   width:min(700px,100%);
   margin:0 auto;
-}
-
-.shot-mobile img{
-  width:100%;
-}
-
-/* La sortie imprimable conserve toute sa largeur et ses proportions. */
-.shot-pdf{
-  width:100%;
 }
 
 .shot-pdf img{
@@ -242,8 +235,10 @@ footer a{text-decoration:none;}
 
 @media(max-width:720px){
   .hero{padding-top:34px;}
+
   .intro,
-  .links{
+  .links,
+  .wide-shots{
     grid-template-columns:1fr;
   }
 
@@ -297,18 +292,31 @@ footer a{text-decoration:none;}
 
   <section class="gallery" aria-label="Captures d’écran">
 
-    <figure class="shot shot-main">
-      <img
-        src="docs/images/boussole-desktop-fr.png"
-        alt="Boussole — interface française sur ordinateur">
-      <figcaption>
-        Interface française — vue ordinateur
-      </figcaption>
-    </figure>
+    <div class="wide-shots">
+
+      <figure class="shot">
+        <img
+          src="docs/images/boussole-desktop-fr.png"
+          alt="Boussole — interface française sur ordinateur">
+        <figcaption>
+          Interface française — vue ordinateur
+        </figcaption>
+      </figure>
+
+      <figure class="shot shot-pdf">
+        <img
+          src="docs/images/boussole-pdf.png"
+          alt="Boussole — aperçu de la fiche imprimée ou exportée en PDF">
+        <figcaption>
+          Fiche imprimable — print / PDF preview
+        </figcaption>
+      </figure>
+
+    </div>
 
     <div class="mobile-shots">
 
-      <figure class="shot shot-mobile">
+      <figure class="shot">
         <img
           src="docs/images/boussole-mobile-fr.png"
           alt="Boussole — interface française sur mobile">
@@ -317,7 +325,7 @@ footer a{text-decoration:none;}
         </figcaption>
       </figure>
 
-      <figure class="shot shot-mobile">
+      <figure class="shot">
         <img
           src="docs/images/boussole-en.png"
           alt="Compass — interface anglaise sur mobile">
@@ -327,15 +335,6 @@ footer a{text-decoration:none;}
       </figure>
 
     </div>
-
-    <figure class="shot shot-pdf">
-      <img
-        src="docs/images/boussole-pdf.png"
-        alt="Boussole — aperçu de la fiche imprimée ou exportée en PDF">
-      <figcaption>
-        Fiche imprimable — print / PDF preview
-      </figcaption>
-    </figure>
 
   </section>
 
