@@ -1,0 +1,1194 @@
+<!--
+Eigrutel Lab - Atelier d'outils libres pour la bande dessinée
+Programme conçu et développé par Simon Léturgie dans le cadre d'Eigrutel BD Academy.
+Nom : Boussole
+Version : 1.0.0
+Date : 01-08-2026
+Code : GNU AGPL v3.0 ou version ultérieure.
+Documentation et modèles : CC BY-SA 4.0, sauf mention contraire.
+Marques, logos et signes distinctifs Eigrutel / Eigrutel Lab / Eigrutel BD Academy : réservés.
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boussole — Scénario</title>
+
+<link rel="icon" type="image/png" href="favicon/fav14.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/fav14.png">
+<meta name="apple-mobile-web-app-title" content="Boussole">
+
+<style>
+:root{
+  --page-bg:#F3F4F6;
+  --card-bg:#FFFFFF;
+  --panel-bg:#FAFAF7;
+  --bleu-atelier:#1F3A44;
+  --rouge-atelier:#A63D40;
+  --rouge-fonce:#842F32;
+  --ocre:#C47A2C;
+  --gris-encrage:#3C3C3C;
+  --text-main:#2D2436;
+  --text-muted:#6F7B7F;
+  --border:rgba(31,58,68,.12);
+  --shadow-soft:0 10px 24px rgba(26,26,26,.08);
+  --shadow-light:0 4px 12px rgba(26,26,26,.06);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--page-bg);
+  color:var(--text-main);
+}
+button,input,textarea,select{font:inherit;}
+button{cursor:pointer;}
+
+.boussole-app{
+  width:min(1080px,calc(100% - 28px));
+  margin:0 auto;
+  padding:22px 0 34px;
+}
+
+/* =========================================================
+   TITRAILLE / HEADER
+   ========================================================= */
+
+.boussole-hero{
+  text-align:center;
+  padding:14px 8px 24px;
+}
+
+.boussole-kicker{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin:0 0 14px;
+  color:var(--rouge-atelier);
+  font-size:.72rem;
+  line-height:1;
+  font-weight:850;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+.boussole-kicker::before,
+.boussole-kicker::after{
+  content:"";
+  display:block;
+  width:48px;
+  height:1px;
+  background:rgba(31,58,68,.28);
+}
+
+.boussole-title{
+  margin:0;
+  color:var(--bleu-atelier);
+  font-size:24px;
+  line-height:1.1;
+  letter-spacing:-.02em;
+  font-weight:850;
+}
+
+.boussole-subtitle{
+  margin:9px 0 0;
+  color:#516166;
+  font-size:15px;
+  font-weight:500;
+}
+
+/* =========================================================
+   STRUCTURE / LAYOUT
+   ========================================================= */
+
+.boussole-panel{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:var(--shadow-soft);
+}
+
+.boussole-form{
+  display:block;
+}
+
+.boussole-section{
+  border-bottom:1px solid var(--border);
+  background:#fff;
+}
+.boussole-section:last-of-type{border-bottom:0;}
+
+.section-toggle{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border:0;
+  padding:0;
+  background:var(--bleu-atelier);
+  color:#FAFAF7;
+  text-align:left;
+  box-shadow:none;
+}
+
+.section-toggle-main{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  padding:12px 18px;
+}
+
+.section-letter{
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  width:25px;
+  height:25px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;
+  background:var(--rouge-atelier);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+
+.section-name{
+  display:block;
+  font-size:13px;
+  font-weight:850;
+  letter-spacing:.045em;
+  text-transform:uppercase;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.section-arrow{
+  flex:0 0 auto;
+  padding:12px 18px 12px 0;
+  color:#FAFAF7;
+  font-size:17px;
+  line-height:1;
+  transform:rotate(90deg);
+  transition:transform .16s ease;
+}
+
+.boussole-section.is-collapsed .section-arrow{
+  transform:rotate(0deg);
+}
+
+.section-body{
+  padding:16px 18px 20px;
+}
+
+.boussole-section.is-collapsed .section-body{
+  display:none;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+
+.field-full{grid-column:1 / -1;}
+
+label{
+  color:#33474d;
+  font-size:12px;
+  font-weight:750;
+}
+
+input[type="text"],
+textarea,
+select{
+  width:100%;
+  border:1px solid #cfd7d6;
+  border-radius:12px;
+  background:#fff;
+  color:var(--text-main);
+  outline:none;
+  transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+input[type="text"],
+select{
+  min-height:42px;
+  padding:9px 11px;
+}
+
+textarea{
+  min-height:76px;
+  padding:10px 11px;
+  resize:none;
+  overflow:hidden;
+  line-height:1.45;
+}
+
+textarea.tall{min-height:104px;}
+textarea.short{min-height:42px;}
+
+input:focus,
+textarea:focus,
+select:focus{
+  border-color:rgba(166,61,64,.65);
+  box-shadow:0 0 0 3px rgba(166,61,64,.09);
+  background:#fffefb;
+}
+
+input::placeholder,
+textarea::placeholder{color:rgba(45,36,54,.42);}
+
+/* =========================================================
+   ACTIONS / CONTROLS
+   ========================================================= */
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:14px 18px 18px;
+  border-top:1px solid var(--border);
+  background:var(--panel-bg);
+}
+
+.btn{
+  appearance:none;
+  border:1px solid #cfd7d6;
+  border-radius:12px;
+  min-height:38px;
+  padding:8px 12px;
+  background:#fff;
+  color:#34474d;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:var(--shadow-light);
+  transition:transform .15s ease, background .15s ease, border-color .15s ease, filter .15s ease;
+}
+
+.btn:hover{transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+
+.btn-primary{
+  border-color:var(--rouge-atelier);
+  background:var(--rouge-atelier);
+  color:#fff;
+}
+
+.btn-primary:hover{filter:brightness(1.05);}
+
+.btn-danger{
+  border-color:#e3c8c8;
+  color:var(--rouge-fonce);
+  background:#fff;
+  box-shadow:none;
+}
+
+.import-wrap{position:relative;overflow:hidden;}
+.import-wrap input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+  width:100%;
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  z-index:20;
+  transform:translateX(-50%) translateY(16px);
+  opacity:0;
+  pointer-events:none;
+  max-width:calc(100% - 28px);
+  padding:10px 13px;
+  border:1px solid #d7ddda;
+  border-radius:999px;
+  background:rgba(255,255,255,.98);
+  color:var(--bleu-atelier);
+  box-shadow:0 12px 30px rgba(31,58,68,.16);
+  font-size:12px;
+  font-weight:750;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* =========================================================
+   SÉLECTEUR DE LANGUE / LANGUAGE SWITCH
+   ========================================================= */
+
+.lang-switch{
+  position:absolute;
+  top:18px;
+  right:18px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  box-shadow:var(--shadow-light);
+}
+
+.lang-btn{
+  border:0;
+  border-radius:999px;
+  padding:4px 7px;
+  background:transparent;
+  color:var(--text-muted);
+  font-size:10px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+.lang-btn.is-active{
+  background:var(--bleu-atelier);
+  color:#fff;
+}
+
+.boussole-hero{position:relative;}
+
+/* =========================================================
+   PIED DE PAGE / FOOTER
+   ========================================================= */
+
+.eigrutel-app-footer{
+  width:100%;
+  padding:24px 16px 4px;
+  text-align:center;
+  box-sizing:border-box;
+}
+
+.eigrutel-app-footer a{
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--bleu-atelier);
+  text-decoration:none;
+  opacity:.72;
+}
+.eigrutel-app-footer a:hover{opacity:1;}
+
+
+/* =========================================================
+   FEUILLE D’IMPRESSION GÉNÉRÉE / GENERATED PRINT SHEET
+   ========================================================= */
+
+.print-sheet{
+  display:none;
+}
+
+/* =========================================================
+   ADAPTATION ÉCRAN / RESPONSIVE
+   ========================================================= */
+
+@media (max-width:720px){
+  .boussole-app{width:min(100% - 18px,640px);padding-top:10px;}
+  .boussole-hero{padding:14px 8px 20px;}
+  .boussole-kicker::before,.boussole-kicker::after{width:32px;}
+  .grid-2{grid-template-columns:1fr;}
+  .field-full{grid-column:auto;}
+  .section-toggle-main{padding:11px 14px;}
+  .section-arrow{padding-right:14px;}
+  .section-body,.actions{padding-left:14px;padding-right:14px;}
+  .actions .btn,.import-wrap{flex:1 1 auto;}
+}
+
+/* =========================================================
+   IMPRESSION / PRINT & PDF
+   ========================================================= */
+
+@media print{
+  @page{size:A4;margin:8mm;}
+
+  html,body{
+    width:210mm;
+    min-height:297mm;
+    background:#fff!important;
+  }
+
+  body{
+    color:#111;
+    font-family:Arial,Helvetica,sans-serif;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  .boussole-app{
+    width:100%;
+    padding:0;
+  }
+
+  .boussole-hero{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:end;
+    gap:8px;
+    padding:0 0 5px;
+    margin-bottom:6px;
+    border-bottom:1.4px solid #1F3A44;
+  }
+
+  .boussole-kicker{
+    justify-content:flex-start;
+    gap:6px;
+    margin:0;
+    font-size:8px;
+    letter-spacing:.14em;
+  }
+
+  .boussole-kicker::before{display:none;}
+  .boussole-kicker::after{width:25px;background:#A63D40;}
+
+  .boussole-title{
+    margin:0;
+    text-align:left;
+    font-size:19px;
+    line-height:1;
+  }
+
+  .boussole-subtitle{
+    margin:0 0 1px;
+    text-align:right;
+    font-size:9px;
+    line-height:1;
+    color:#555;
+  }
+
+  .boussole-panel,
+  .actions,
+  .eigrutel-app-footer,
+  .toast,
+  .lang-switch{display:none!important;}
+
+  .print-sheet{
+    display:block!important;
+    width:100%;
+  }
+
+  .print-grid{
+    column-count:2;
+    column-gap:6mm;
+  }
+
+  .print-section{
+    display:inline-block;
+    width:100%;
+    margin:0 0 5px;
+    border:1px solid #cfd7d6;
+    border-radius:6px;
+    overflow:visible;
+    background:#fff!important;
+  }
+
+  .print-section-title{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    margin:0;
+    padding:4px 6px;
+    background:#1F3A44!important;
+    color:#fff!important;
+    font-size:8px;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+
+  .print-letter{
+    display:inline-grid;
+    place-items:center;
+    width:14px;
+    height:14px;
+    border-radius:999px;
+    background:#A63D40!important;
+    color:#fff!important;
+    font-size:7px;
+    font-weight:900;
+  }
+
+  .print-fields{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:3px 5px;
+    padding:5px 6px 6px;
+  }
+
+  .print-block{
+    min-width:0;
+  }
+
+  .print-block.full{
+    grid-column:1 / -1;
+  }
+
+  .print-label{
+    margin:0 0 1px;
+    font-size:6.8px;
+    line-height:1.05;
+    color:#1F3A44;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.035em;
+  }
+
+  .print-value{
+    min-height:13px;
+    margin:0;
+    border:0;
+    border-radius:0;
+    padding:2px 3px;
+    font-size:7.6px;
+    line-height:1.16;
+    color:#111;
+    background:#fff!important;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    overflow:visible;
+  }
+
+  .print-value.empty{
+    color:#777;
+  }
+}
+</style>
+</head>
+<body>
+<!-- Application principale / Main application -->
+<main class="boussole-app" data-app="boussole-bd">
+  <!-- En-tête et langue / Header and language -->
+  <header class="boussole-hero">
+    <div class="lang-switch" aria-label="Language">
+      <button class="lang-btn is-active" type="button" data-lang="fr">FR</button>
+      <button class="lang-btn" type="button" data-lang="en">EN</button>
+    </div>
+    <p class="boussole-kicker" data-i18n="kicker">Scénario</p>
+    <h1 class="boussole-title" data-i18n="title">Boussole</h1>
+    <p class="boussole-subtitle" data-i18n="subtitle">Fiche de cadrage</p>
+  </header>
+
+  <!-- Formulaire de cadrage / Story brief form -->
+  <section class="boussole-panel" aria-label="Boussole scénario">
+    <form class="boussole-form" id="form" autocomplete="off">
+
+      <section class="boussole-section" data-section="identite">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">A</span><span class="section-name">Titre et thème</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field">
+              <label for="titreHistoire">Titre</label>
+              <input id="titreHistoire" data-field="titreHistoire" type="text" placeholder="Titre provisoire ou définitif">
+            </div>
+            <div class="field">
+              <label for="theme">Thème</label>
+              <textarea id="theme" data-field="theme" class="short" rows="1" placeholder="Parentalité, transmission, jalousie, solitude…"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="destinataire">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">B</span><span class="section-name">Destinataire</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="field">
+            <label for="destinataire">À qui cette histoire s’adresse-t-elle ?</label>
+            <textarea id="destinataire" data-field="destinataire" class="short" rows="1" placeholder="Lecteur jeunesse, adulte, éditeur, lecteur de série…"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="support">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">C</span><span class="section-name">Support</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field">
+              <label for="support">Support principal</label>
+              <select id="support" data-field="support">
+                <option value="">—</option>
+                <option>Livre / album</option>
+                <option>Journal</option>
+                <option>Numérique</option>
+                <option>Fanzine</option>
+                <option>Webtoon</option>
+                <option>Réseaux sociaux</option>
+                <option>Dossier éditeur</option>
+                <option>Site web</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="formatLecture">Format ou longueur</label>
+              <textarea id="formatLecture" data-field="formatLecture" class="short" rows="1" placeholder="Strip, page, scène, chapitre, album, post court…"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="objectif">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">D</span><span class="section-name">Objectif</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field field-full">
+              <label for="objectifPrincipal">Que doit accomplir cette histoire ?</label>
+              <textarea id="objectifPrincipal" data-field="objectifPrincipal" class="tall" placeholder="Faire comprendre un conflit, installer un personnage, provoquer une chute, préparer une décision…"></textarea>
+            </div>
+            <div class="field">
+              <label for="enjeuNarratif">Enjeu narratif</label>
+              <textarea id="enjeuNarratif" data-field="enjeuNarratif" placeholder="Ce qui se joue concrètement dans l’histoire."></textarea>
+            </div>
+            <div class="field">
+              <label for="promesseLecture">Promesse de lecture</label>
+              <textarea id="promesseLecture" data-field="promesseLecture" placeholder="Gag, émotion, tension, révélation, portrait…"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="message">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">E</span><span class="section-name">Message principal</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field">
+              <label for="ideeImportante">Idée la plus importante</label>
+              <textarea id="ideeImportante" data-field="ideeImportante"></textarea>
+            </div>
+            <div class="field">
+              <label for="uneChose">Si le lecteur ne retient qu’une chose</label>
+              <textarea id="uneChose" data-field="uneChose"></textarea>
+            </div>
+            <div class="field field-full">
+              <label for="infoPremiere">Information à faire apparaître en premier</label>
+              <textarea id="infoPremiere" data-field="infoPremiere"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="effet">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">F</span><span class="section-name">Effet attendu</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field">
+              <label for="comprendreApres">Que doit-il comprendre ?</label>
+              <textarea id="comprendreApres" data-field="comprendreApres"></textarea>
+            </div>
+            <div class="field">
+              <label for="ressentirApres">Que doit-il ressentir ?</label>
+              <textarea id="ressentirApres" data-field="ressentirApres"></textarea>
+            </div>
+            <div class="field field-full">
+              <label for="erreurEviter">Erreur d’interprétation à éviter</label>
+              <textarea id="erreurEviter" data-field="erreurEviter"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="ton">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">G</span><span class="section-name">Ton</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="field">
+            <label for="tonPrincipal">Ton principal</label>
+            <textarea id="tonPrincipal" data-field="tonPrincipal" class="short" rows="1" placeholder="Sobre, drôle, mélancolique, sec, tendre, noir, absurde…"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="infos">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">H</span><span class="section-name">Informations indispensables</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field"><label for="faits">Faits à mentionner</label><textarea id="faits" data-field="faits"></textarea></div>
+            <div class="field"><label for="personnages">Personnages</label><textarea id="personnages" data-field="personnages"></textarea></div>
+            <div class="field"><label for="lieux">Lieux</label><textarea id="lieux" data-field="lieux"></textarea></div>
+            <div class="field"><label for="objets">Objets ou motifs</label><textarea id="objets" data-field="objets"></textarea></div>
+            <div class="field field-full"><label for="references">Références</label><textarea id="references" data-field="references"></textarea></div>
+            <div class="field field-full">
+              <label for="echos">Échos</label>
+              <textarea id="echos" data-field="echos" class="tall" placeholder="Éléments secondaires qui répondent au thème : histoire secondaire, objet transmis, geste répété, décor qui reformule l’enjeu."></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="boussole-section is-collapsed" data-section="ecarter">
+        <button class="section-toggle" type="button" aria-expanded="true">
+          <span class="section-toggle-main"><span class="section-letter">I</span><span class="section-name">À écarter</span></span>
+          <span class="section-arrow">›</span>
+        </button>
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field"><label for="alourdirait">Ce qui alourdirait l’histoire</label><textarea id="alourdirait" data-field="alourdirait"></textarea></div>
+            <div class="field"><label for="autreHistoire">Ce qui appartient à une autre histoire</label><textarea id="autreHistoire" data-field="autreHistoire"></textarea></div>
+            <div class="field"><label for="implicite">Précision pouvant rester implicite</label><textarea id="implicite" data-field="implicite"></textarea></div>
+            <div class="field"><label for="digression">Digression à éviter</label><textarea id="digression" data-field="digression"></textarea></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Import, export et remise à zéro / Import, export and reset -->
+      <div class="actions" aria-label="Export">
+        <button class="btn btn-primary" type="button" id="exportPdf">Exporter en PDF</button>
+        <button class="btn" type="button" id="exportMd">Export Markdown</button>
+        <button class="btn" type="button" id="exportJson">Export JSON</button>
+        <label class="btn import-wrap" for="importJson">Import JSON<input id="importJson" type="file" accept="application/json,.json"></label>
+        <button class="btn btn-danger" type="button" id="resetApp">Réinitialiser</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Contenu généré uniquement pour l’impression / Print-only generated content -->
+  <section class="print-sheet" id="printSheet" aria-hidden="true"></section>
+
+  <!-- Signature Eigrutel / Eigrutel signature -->
+  <footer class="eigrutel-app-footer">
+    <a href="https://www.stripmee.com" target="_blank" rel="noopener noreferrer">Eigrutel BD Academy</a>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Stockage local et préférences / Local storage and preferences */
+  const STORAGE_KEY = "boussoleBD.v10";
+  const SECTIONS_KEY = "boussoleBD.sections.v10";
+  const LANG_KEY = "boussoleBD.lang.v10";
+
+  /* Traductions de l’interface / Interface translations */
+  const I18N = {
+    en:{
+      kicker:"Story", title:"Compass", subtitle:"Story brief", panelAria:"Story compass",
+      sections:["Title and theme","Audience","Format","Goal","Core message","Intended effect","Tone","Essential information","Leave out"],
+      labels:{
+        titreHistoire:"Title", theme:"Theme", destinataire:"Who is this story for?", support:"Main format", formatLecture:"Format or length",
+        objectifPrincipal:"What should this story achieve?", enjeuNarratif:"Narrative stakes", promesseLecture:"Reader promise",
+        ideeImportante:"Most important idea", uneChose:"If the reader remembers only one thing", infoPremiere:"Information to introduce first",
+        comprendreApres:"What should they understand?", ressentirApres:"What should they feel?", erreurEviter:"Misinterpretation to avoid",
+        tonPrincipal:"Main tone", faits:"Facts to mention", personnages:"Characters", lieux:"Locations", objets:"Objects or motifs", references:"References",
+        echos:"Echoes", alourdirait:"What would weigh the story down", autreHistoire:"What belongs to another story", implicite:"Detail that can remain implicit", digression:"Digression to avoid"
+      },
+      placeholders:{
+        titreHistoire:"Working or final title", theme:"Parenthood, legacy, jealousy, loneliness…", destinataire:"Young reader, adult, publisher, series reader…",
+        formatLecture:"Strip, page, scene, chapter, album, short post…", objectifPrincipal:"Clarify a conflict, establish a character, deliver a punchline, set up a decision…",
+        enjeuNarratif:"What is concretely at stake in the story.", promesseLecture:"Gag, emotion, tension, revelation, portrait…", tonPrincipal:"Understated, funny, melancholic, dry, tender, dark, absurd…",
+        echos:"Secondary elements that echo the theme: subplot, inherited object, repeated gesture, setting that reframes the stakes."
+      },
+      supportOptions:["—","Book / album","Newspaper / magazine","Digital","Fanzine","Webtoon","Social media","Publisher pitch","Website","Other"],
+      buttons:{exportPdf:"Export PDF",exportMd:"Export Markdown",exportJson:"Export JSON",importJson:"Import JSON",resetApp:"Reset"},
+      mdSubtitle:"Story brief", untitled:"Untitled", jsonImported:"JSON imported.", jsonInvalid:"Import failed: invalid JSON.", resetConfirm:"Reset the current sheet?", resetDone:"Sheet reset."
+    },
+    fr:{
+      kicker:"Scénario", title:"Boussole", subtitle:"Fiche de cadrage", panelAria:"Boussole scénario",
+      sections:["Titre et thème","Destinataire","Support","Objectif","Message principal","Effet attendu","Ton","Informations indispensables","À écarter"],
+      labels:{
+        titreHistoire:"Titre", theme:"Thème", destinataire:"À qui cette histoire s’adresse-t-elle ?", support:"Support principal", formatLecture:"Format ou longueur",
+        objectifPrincipal:"Que doit accomplir cette histoire ?", enjeuNarratif:"Enjeu narratif", promesseLecture:"Promesse de lecture",
+        ideeImportante:"Idée la plus importante", uneChose:"Si le lecteur ne retient qu’une chose", infoPremiere:"Information à faire apparaître en premier",
+        comprendreApres:"Que doit-il comprendre ?", ressentirApres:"Que doit-il ressentir ?", erreurEviter:"Erreur d’interprétation à éviter",
+        tonPrincipal:"Ton principal", faits:"Faits à mentionner", personnages:"Personnages", lieux:"Lieux", objets:"Objets ou motifs", references:"Références",
+        echos:"Échos", alourdirait:"Ce qui alourdirait l’histoire", autreHistoire:"Ce qui appartient à une autre histoire", implicite:"Précision pouvant rester implicite", digression:"Digression à éviter"
+      },
+      placeholders:{
+        titreHistoire:"Titre provisoire ou définitif", theme:"Parentalité, transmission, jalousie, solitude…", destinataire:"Lecteur jeunesse, adulte, éditeur, lecteur de série…",
+        formatLecture:"Strip, page, scène, chapitre, album, post court…", objectifPrincipal:"Faire comprendre un conflit, installer un personnage, provoquer une chute, préparer une décision…",
+        enjeuNarratif:"Ce qui se joue concrètement dans l’histoire.", promesseLecture:"Gag, émotion, tension, révélation, portrait…", tonPrincipal:"Sobre, drôle, mélancolique, sec, tendre, noir, absurde…",
+        echos:"Éléments secondaires qui répondent au thème : histoire secondaire, objet transmis, geste répété, décor qui reformule l’enjeu."
+      },
+      supportOptions:["—","Livre / album","Journal","Numérique","Fanzine","Webtoon","Réseaux sociaux","Dossier éditeur","Site web","Autre"],
+      buttons:{exportPdf:"Exporter en PDF",exportMd:"Export Markdown",exportJson:"Export JSON",importJson:"Import JSON",resetApp:"Réinitialiser"},
+      mdSubtitle:"Fiche de cadrage", untitled:"Sans titre", jsonImported:"JSON importé.", jsonInvalid:"Import impossible : JSON invalide.", resetConfirm:"Réinitialiser la fiche en cours ?", resetDone:"Fiche réinitialisée."
+    }
+  };
+
+  let currentLang = localStorage.getItem(LANG_KEY) || "fr";
+
+  /* Structure des données du formulaire / Form data structure */
+  const defaults = {
+    titreHistoire:"",
+    theme:"",
+    destinataire:"",
+    support:"",
+    formatLecture:"",
+    objectifPrincipal:"",
+    enjeuNarratif:"",
+    promesseLecture:"",
+    ideeImportante:"",
+    uneChose:"",
+    infoPremiere:"",
+    comprendreApres:"",
+    ressentirApres:"",
+    erreurEviter:"",
+    tonPrincipal:"",
+    faits:"",
+    personnages:"",
+    lieux:"",
+    objets:"",
+    references:"",
+    echos:"",
+    alourdirait:"",
+    autreHistoire:"",
+    implicite:"",
+    digression:""
+  };
+
+  let groups = [];
+
+  const fields = Array.from(document.querySelectorAll("[data-field]"));
+  const form = document.getElementById("form");
+  const toast = document.getElementById("toast");
+  let toastTimer = null;
+
+  /* Groupes utilisés par les exports et l’impression / Groups used by exports and printing */
+  function rebuildGroups(){
+    const t = I18N[currentLang];
+    const ids = [
+      [["titreHistoire"],["theme"]], [["destinataire"]], [["support"],["formatLecture"]],
+      [["objectifPrincipal"],["enjeuNarratif"],["promesseLecture"]], [["ideeImportante"],["uneChose"],["infoPremiere"]],
+      [["comprendreApres"],["ressentirApres"],["erreurEviter"]], [["tonPrincipal"]],
+      [["faits"],["personnages"],["lieux"],["objets"],["references"],["echos"]],
+      [["alourdirait"],["autreHistoire"],["implicite"],["digression"]]
+    ];
+    groups = ids.map((group,index)=>({title:t.sections[index],items:group.map(([key])=>[key,t.labels[key]])}));
+  }
+
+  /* Application de la langue sans modifier les données / Apply language without changing user data */
+  function applyLanguage(lang){
+    currentLang = lang === "fr" ? "fr" : "en";
+    localStorage.setItem(LANG_KEY,currentLang);
+    document.documentElement.lang = currentLang;
+    const t = I18N[currentLang];
+    document.title = (currentLang === "fr" ? "Boussole — Scénario" : "Compass — Story");
+    document.querySelector('[data-i18n="kicker"]').textContent=t.kicker;
+    document.querySelector('[data-i18n="title"]').textContent=t.title;
+    document.querySelector('[data-i18n="subtitle"]').textContent=t.subtitle;
+    document.querySelector('.boussole-panel').setAttribute('aria-label',t.panelAria);
+    document.querySelectorAll('.section-name').forEach((el,i)=>el.textContent=t.sections[i]);
+    Object.entries(t.labels).forEach(([id,label])=>{ const el=document.querySelector(`label[for="${id}"]`); if(el) el.textContent=label; });
+    Object.entries(t.placeholders).forEach(([id,value])=>{ const el=document.getElementById(id); if(el) el.placeholder=value; });
+    const support=document.getElementById('support');
+    Array.from(support.options).forEach((opt,i)=>{ if(t.supportOptions[i]!==undefined) opt.textContent=t.supportOptions[i]; });
+    Object.entries(t.buttons).forEach(([id,label])=>{ const el=document.getElementById(id); if(el){ if(id==='importJson') el.parentElement.childNodes[0].nodeValue=label; else el.textContent=label; } });
+    document.querySelectorAll('.lang-btn').forEach(btn=>btn.classList.toggle('is-active',btn.dataset.lang===currentLang));
+    rebuildGroups();
+    buildPrintSheet();
+  }
+
+  /* Ajustement automatique des zones de texte / Automatic textarea resizing */
+  function autoResizeTextarea(field){
+    if(!field || field.tagName !== "TEXTAREA") return;
+    field.style.height = "auto";
+    const minHeight = parseFloat(getComputedStyle(field).minHeight) || 0;
+    field.style.height = Math.max(field.scrollHeight, minHeight) + "px";
+  }
+
+  function autoResizeAll(){
+    fields.forEach(autoResizeTextarea);
+  }
+
+  function normalize(value){return String(value || "").trim();}
+
+  /* Message temporaire d’état / Temporary status message */
+  function showToast(message){
+    toast.textContent = message;
+    toast.classList.add("visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("visible"), 1800);
+  }
+
+  /* Lecture, écriture et sauvegarde des données / Read, write and save data */
+  function getData(){
+    const data = {...defaults};
+    /* Écoute des modifications du formulaire / Watch form changes */
+  fields.forEach(field => { data[field.dataset.field] = field.value || ""; });
+    return data;
+  }
+
+  function setData(data){
+    const clean = {...defaults, ...(data || {})};
+    fields.forEach(field => {
+      field.value = clean[field.dataset.field] || "";
+      autoResizeTextarea(field);
+    });
+    save();
+  }
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(getData()));
+  }
+
+  function load(){
+    try{
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if(data && typeof data === "object") setData(data);
+      else setData(defaults);
+    }catch(error){
+      setData(defaults);
+    }
+  }
+
+  /* Noms de fichiers sûrs pour les exports / Safe filenames for exports */
+  function slugify(value){
+    const base = normalize(value) || "sans_titre";
+    return base.toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "sans_titre";
+  }
+
+  /* Téléchargement local sans serveur / Client-side download without a server */
+  function download(filename, content, mime){
+    const blob = new Blob([content], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  /* Export Markdown dans la langue active / Markdown export in the active language */
+  function buildMarkdown(data){
+    const t = I18N[currentLang];
+    const lines = ["# " + t.title + " — " + (normalize(data.titreHistoire) || t.untitled), "", t.mdSubtitle, ""];
+    groups.forEach(group => {
+      lines.push("## " + group.title, "");
+      group.items.forEach(([key,label]) => {
+        lines.push("**" + label + "**");
+        lines.push(normalize(data[key]) || "—");
+        lines.push("");
+      });
+    });
+    return lines.join("\n").replace(/\n{4,}/g,"\n\n\n");
+  }
+
+  function textNode(value){
+    return document.createTextNode(value);
+  }
+
+  /* Génération de la feuille A4 d’impression / Generate the A4 print sheet */
+  function buildPrintSheet(){
+    const data = getData();
+    const sheet = document.getElementById("printSheet");
+    if(!sheet) return;
+
+    sheet.innerHTML = "";
+
+    const grid = document.createElement("div");
+    grid.className = "print-grid";
+
+    groups.forEach((group, index) => {
+      const section = document.createElement("section");
+      section.className = "print-section";
+
+      const title = document.createElement("h2");
+      title.className = "print-section-title";
+
+      const letter = document.createElement("span");
+      letter.className = "print-letter";
+      letter.textContent = String.fromCharCode(65 + index);
+
+      const name = document.createElement("span");
+      name.textContent = group.title;
+
+      title.appendChild(letter);
+      title.appendChild(name);
+      section.appendChild(title);
+
+      const fieldsWrap = document.createElement("div");
+      fieldsWrap.className = "print-fields";
+
+      group.items.forEach(([key,label]) => {
+        const raw = normalize(data[key]);
+        const block = document.createElement("div");
+        const longField = raw.length > 120 || /\n/.test(raw) || group.items.length === 1;
+        block.className = "print-block" + (longField ? " full" : "");
+
+        const labelEl = document.createElement("p");
+        labelEl.className = "print-label";
+        labelEl.appendChild(textNode(label));
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "print-value" + (raw ? "" : " empty");
+        valueEl.appendChild(textNode(raw || "—"));
+
+        block.appendChild(labelEl);
+        block.appendChild(valueEl);
+        fieldsWrap.appendChild(block);
+      });
+
+      section.appendChild(fieldsWrap);
+      grid.appendChild(section);
+    });
+
+    sheet.appendChild(grid);
+  }
+
+  /* Mémorisation des sections ouvertes / Remember expanded sections */
+  function saveSectionState(){
+    const state = {};
+    document.querySelectorAll(".boussole-section[data-section]").forEach(section => {
+      state[section.dataset.section] = !section.classList.contains("is-collapsed");
+    });
+    localStorage.setItem(SECTIONS_KEY, JSON.stringify(state));
+  }
+
+  function loadSectionState(){
+    let state = null;
+    try{ state = JSON.parse(localStorage.getItem(SECTIONS_KEY)); }catch(error){}
+    if(!state || typeof state !== "object") return;
+    document.querySelectorAll(".boussole-section[data-section]").forEach(section => {
+      const key = section.dataset.section;
+      const open = state[key] !== false;
+      section.classList.toggle("is-collapsed", !open);
+      const btn = section.querySelector(".section-toggle");
+      if(btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+
+  fields.forEach(field => {
+    field.addEventListener("input", () => {
+      autoResizeTextarea(field);
+      save();
+    });
+    field.addEventListener("change", () => {
+      autoResizeTextarea(field);
+      save();
+    });
+  });
+
+  /* Ouverture et fermeture des sections / Expand and collapse sections */
+  document.querySelectorAll(".section-toggle").forEach(button => {
+    button.addEventListener("click", () => {
+      const section = button.closest(".boussole-section");
+      if(!section) return;
+      const collapsed = section.classList.toggle("is-collapsed");
+      button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      if(!collapsed) requestAnimationFrame(autoResizeAll);
+      saveSectionState();
+    });
+  });
+
+  /* Exports / Exports */
+  document.getElementById("exportPdf").addEventListener("click", () => {
+    save();
+    buildPrintSheet();
+    window.print();
+  });
+
+  document.getElementById("exportMd").addEventListener("click", () => {
+    const data = getData();
+    download("boussole_" + slugify(data.titreHistoire) + ".md", buildMarkdown(data), "text/markdown;charset=utf-8");
+  });
+
+  document.getElementById("exportJson").addEventListener("click", () => {
+    const data = getData();
+    const payload = {
+      app: currentLang === "fr" ? "Boussole" : "Compass",
+      version:"1.0.0",
+      language:currentLang,
+      orientation: currentLang === "fr" ? "histoire BD" : "comic story",
+      exportedAt:new Date().toISOString(),
+      data
+    };
+    download("boussole_" + slugify(data.titreHistoire) + ".json", JSON.stringify(payload,null,2), "application/json;charset=utf-8");
+  });
+
+  /* Import JSON / JSON import */
+  document.getElementById("importJson").addEventListener("change", event => {
+    const file = event.target.files && event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const imported = JSON.parse(reader.result);
+        setData(imported.data || imported);
+        showToast(I18N[currentLang].jsonImported);
+      }catch(error){
+        showToast(I18N[currentLang].jsonInvalid);
+      }
+      event.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  /* Réinitialisation / Reset */
+  document.getElementById("resetApp").addEventListener("click", () => {
+    const ok = window.confirm(I18N[currentLang].resetConfirm);
+    if(!ok) return;
+    localStorage.removeItem(STORAGE_KEY);
+    setData(defaults);
+    showToast(I18N[currentLang].resetDone);
+  });
+
+  /* Changement de langue / Language switching */
+  document.querySelectorAll('.lang-btn').forEach(button => {
+    button.addEventListener('click', () => applyLanguage(button.dataset.lang));
+  });
+
+  /* Initialisation / Initialization */
+  window.addEventListener("beforeprint", buildPrintSheet);
+
+  rebuildGroups();
+  applyLanguage(currentLang);
+  load();
+  loadSectionState();
+  autoResizeAll();
+  window.addEventListener("resize", autoResizeAll);
+  buildPrintSheet();
+  form.addEventListener("submit", event => event.preventDefault());
+})();
+</script>
+</body>
+</html>
