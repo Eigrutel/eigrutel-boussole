@@ -15,8 +15,8 @@ Marques, logos et signes distinctifs Eigrutel / Eigrutel Lab / Eigrutel BD Acade
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Boussole — Scénario</title>
 
-<link rel="icon" type="image/png" href="favicon/favboussole.png">
-<link rel="apple-touch-icon" sizes="180x180" href="favicon/favboussole.png">
+<link rel="icon" type="image/png" href="favicon/fav14.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/fav14.png">
 <meta name="apple-mobile-web-app-title" content="Boussole">
 
 <style>
@@ -55,7 +55,7 @@ button{cursor:pointer;}
 }
 
 /* =========================================================
-   TITRAILLE / HEADER
+   TITRAILLE
    ========================================================= */
 
 .boussole-hero{
@@ -103,7 +103,7 @@ button{cursor:pointer;}
 }
 
 /* =========================================================
-   STRUCTURE / LAYOUT
+   STRUCTURE
    ========================================================= */
 
 .boussole-panel{
@@ -255,7 +255,7 @@ input::placeholder,
 textarea::placeholder{color:rgba(45,36,54,.42);}
 
 /* =========================================================
-   ACTIONS / CONTROLS
+   ACTIONS
    ========================================================= */
 
 .actions{
@@ -330,7 +330,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 .toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* =========================================================
-   SÉLECTEUR DE LANGUE / LANGUAGE SWITCH
+   LANGUAGE SWITCH
    ========================================================= */
 
 .lang-switch{
@@ -367,7 +367,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 .boussole-hero{position:relative;}
 
 /* =========================================================
-   PIED DE PAGE / FOOTER
+   FOOTER
    ========================================================= */
 
 .eigrutel-app-footer{
@@ -391,7 +391,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 
 
 /* =========================================================
-   FEUILLE D’IMPRESSION GÉNÉRÉE / GENERATED PRINT SHEET
+   FEUILLE D’IMPRESSION GÉNÉRÉE
    ========================================================= */
 
 .print-sheet{
@@ -399,7 +399,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 }
 
 /* =========================================================
-   ADAPTATION ÉCRAN / RESPONSIVE
+   RESPONSIVE
    ========================================================= */
 
 @media (max-width:720px){
@@ -415,7 +415,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 }
 
 /* =========================================================
-   IMPRESSION / PRINT & PDF
+   IMPRESSION / PDF
    ========================================================= */
 
 @media print{
@@ -576,9 +576,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 </style>
 </head>
 <body>
-<!-- Application principale / Main application -->
 <main class="boussole-app" data-app="boussole-bd">
-  <!-- En-tête et langue / Header and language -->
   <header class="boussole-hero">
     <div class="lang-switch" aria-label="Language">
       <button class="lang-btn is-active" type="button" data-lang="fr">FR</button>
@@ -589,7 +587,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     <p class="boussole-subtitle" data-i18n="subtitle">Fiche de cadrage</p>
   </header>
 
-  <!-- Formulaire de cadrage / Story brief form -->
   <section class="boussole-panel" aria-label="Boussole scénario">
     <form class="boussole-form" id="form" autocomplete="off">
 
@@ -772,7 +769,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
         </div>
       </section>
 
-      <!-- Import, export et remise à zéro / Import, export and reset -->
       <div class="actions" aria-label="Export">
         <button class="btn btn-primary" type="button" id="exportPdf">Exporter en PDF</button>
         <button class="btn" type="button" id="exportMd">Export Markdown</button>
@@ -783,10 +779,8 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     </form>
   </section>
 
-  <!-- Contenu généré uniquement pour l’impression / Print-only generated content -->
   <section class="print-sheet" id="printSheet" aria-hidden="true"></section>
 
-  <!-- Signature Eigrutel / Eigrutel signature -->
   <footer class="eigrutel-app-footer">
     <a href="https://www.stripmee.com" target="_blank" rel="noopener noreferrer">Eigrutel BD Academy</a>
   </footer>
@@ -798,12 +792,11 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 (function(){
   "use strict";
 
-  /* Stockage local et préférences / Local storage and preferences */
   const STORAGE_KEY = "boussoleBD.v10";
   const SECTIONS_KEY = "boussoleBD.sections.v10";
   const LANG_KEY = "boussoleBD.lang.v10";
+  const SESSION_KEY = "boussoleBD.session.v10";
 
-  /* Traductions de l’interface / Interface translations */
   const I18N = {
     en:{
       kicker:"Story", title:"Compass", subtitle:"Story brief", panelAria:"Story compass",
@@ -851,7 +844,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 
   let currentLang = localStorage.getItem(LANG_KEY) || "fr";
 
-  /* Structure des données du formulaire / Form data structure */
   const defaults = {
     titreHistoire:"",
     theme:"",
@@ -887,7 +879,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
   const toast = document.getElementById("toast");
   let toastTimer = null;
 
-  /* Groupes utilisés par les exports et l’impression / Groups used by exports and printing */
   function rebuildGroups(){
     const t = I18N[currentLang];
     const ids = [
@@ -900,7 +891,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     groups = ids.map((group,index)=>({title:t.sections[index],items:group.map(([key])=>[key,t.labels[key]])}));
   }
 
-  /* Application de la langue sans modifier les données / Apply language without changing user data */
   function applyLanguage(lang){
     currentLang = lang === "fr" ? "fr" : "en";
     localStorage.setItem(LANG_KEY,currentLang);
@@ -922,7 +912,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     buildPrintSheet();
   }
 
-  /* Ajustement automatique des zones de texte / Automatic textarea resizing */
   function autoResizeTextarea(field){
     if(!field || field.tagName !== "TEXTAREA") return;
     field.style.height = "auto";
@@ -936,7 +925,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
 
   function normalize(value){return String(value || "").trim();}
 
-  /* Message temporaire d’état / Temporary status message */
   function showToast(message){
     toast.textContent = message;
     toast.classList.add("visible");
@@ -944,38 +932,71 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     toastTimer = setTimeout(() => toast.classList.remove("visible"), 1800);
   }
 
-  /* Lecture, écriture et sauvegarde des données / Read, write and save data */
   function getData(){
     const data = {...defaults};
-    /* Écoute des modifications du formulaire / Watch form changes */
-  fields.forEach(field => { data[field.dataset.field] = field.value || ""; });
+    fields.forEach(field => { data[field.dataset.field] = field.value || ""; });
     return data;
   }
 
-  function setData(data){
+  /* =========================================================
+     SAUVEGARDE RÉSILIENTE / RESILIENT DRAFT STORAGE
+     ---------------------------------------------------------
+     Safari/iPadOS peut ouvrir un export dans une vue temporaire
+     et recharger la page au retour. Le brouillon est donc conservé
+     dans localStorage ET sessionStorage avant toute navigation.
+
+     Safari/iPadOS may open an exported file in a temporary viewer
+     and reload the app when returning. The draft is therefore kept
+     in both localStorage and sessionStorage before any navigation.
+     ========================================================= */
+
+  function setData(data, persist = true){
     const clean = {...defaults, ...(data || {})};
     fields.forEach(field => {
       field.value = clean[field.dataset.field] || "";
       autoResizeTextarea(field);
     });
-    save();
+    if(persist) save();
   }
 
-  function save(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getData()));
-  }
-
-  function load(){
+  function writeStorage(storage, key, value){
     try{
-      const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if(data && typeof data === "object") setData(data);
-      else setData(defaults);
+      storage.setItem(key, value);
+      return true;
     }catch(error){
-      setData(defaults);
+      return false;
     }
   }
 
-  /* Noms de fichiers sûrs pour les exports / Safe filenames for exports */
+  function readStorage(storage, key){
+    try{
+      const raw = storage.getItem(key);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      return data && typeof data === "object" ? data : null;
+    }catch(error){
+      return null;
+    }
+  }
+
+  function save(){
+    const serialized = JSON.stringify(getData());
+    writeStorage(localStorage, STORAGE_KEY, serialized);
+    writeStorage(sessionStorage, SESSION_KEY, serialized);
+  }
+
+  function load(){
+    const data = readStorage(localStorage, STORAGE_KEY) || readStorage(sessionStorage, SESSION_KEY);
+
+    // Ne jamais écraser un brouillon par une fiche vide au chargement.
+    // Never overwrite a saved draft with an empty sheet while loading.
+    setData(data || defaults, false);
+
+    // Si une copie de secours a été utilisée, on resynchronise les deux stockages.
+    // If the fallback copy was used, synchronize both storage locations again.
+    if(data) save();
+  }
+
   function slugify(value){
     const base = normalize(value) || "sans_titre";
     return base.toLowerCase()
@@ -985,8 +1006,11 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
       .replace(/^_+|_+$/g, "") || "sans_titre";
   }
 
-  /* Téléchargement local sans serveur / Client-side download without a server */
   function download(filename, content, mime){
+    // Sauvegarde impérative avant que Safari puisse quitter temporairement la page.
+    // Force-save before Safari can temporarily leave the application page.
+    save();
+
     const blob = new Blob([content], {type:mime});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -995,10 +1019,12 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
+
+    // Révocation différée : iOS peut encore utiliser l'URL Blob dans son aperçu.
+    // Delayed revocation: iOS may still need the Blob URL in its preview viewer.
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
   }
 
-  /* Export Markdown dans la langue active / Markdown export in the active language */
   function buildMarkdown(data){
     const t = I18N[currentLang];
     const lines = ["# " + t.title + " — " + (normalize(data.titreHistoire) || t.untitled), "", t.mdSubtitle, ""];
@@ -1017,7 +1043,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     return document.createTextNode(value);
   }
 
-  /* Génération de la feuille A4 d’impression / Generate the A4 print sheet */
   function buildPrintSheet(){
     const data = getData();
     const sheet = document.getElementById("printSheet");
@@ -1075,7 +1100,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     sheet.appendChild(grid);
   }
 
-  /* Mémorisation des sections ouvertes / Remember expanded sections */
   function saveSectionState(){
     const state = {};
     document.querySelectorAll(".boussole-section[data-section]").forEach(section => {
@@ -1108,7 +1132,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     });
   });
 
-  /* Ouverture et fermeture des sections / Expand and collapse sections */
   document.querySelectorAll(".section-toggle").forEach(button => {
     button.addEventListener("click", () => {
       const section = button.closest(".boussole-section");
@@ -1120,7 +1143,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     });
   });
 
-  /* Exports / Exports */
   document.getElementById("exportPdf").addEventListener("click", () => {
     save();
     buildPrintSheet();
@@ -1128,11 +1150,13 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
   });
 
   document.getElementById("exportMd").addEventListener("click", () => {
+    save();
     const data = getData();
     download("boussole_" + slugify(data.titreHistoire) + ".md", buildMarkdown(data), "text/markdown;charset=utf-8");
   });
 
   document.getElementById("exportJson").addEventListener("click", () => {
+    save();
     const data = getData();
     const payload = {
       app: currentLang === "fr" ? "Boussole" : "Compass",
@@ -1145,7 +1169,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     download("boussole_" + slugify(data.titreHistoire) + ".json", JSON.stringify(payload,null,2), "application/json;charset=utf-8");
   });
 
-  /* Import JSON / JSON import */
   document.getElementById("importJson").addEventListener("change", event => {
     const file = event.target.files && event.target.files[0];
     if(!file) return;
@@ -1163,21 +1186,34 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     reader.readAsText(file);
   });
 
-  /* Réinitialisation / Reset */
   document.getElementById("resetApp").addEventListener("click", () => {
     const ok = window.confirm(I18N[currentLang].resetConfirm);
     if(!ok) return;
-    localStorage.removeItem(STORAGE_KEY);
-    setData(defaults);
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(error){}
+    try{ sessionStorage.removeItem(SESSION_KEY); }catch(error){}
+    setData(defaults, false);
+    save();
     showToast(I18N[currentLang].resetDone);
   });
 
-  /* Changement de langue / Language switching */
   document.querySelectorAll('.lang-btn').forEach(button => {
     button.addEventListener('click', () => applyLanguage(button.dataset.lang));
   });
 
-  /* Initialisation / Initialization */
+  // Sauvegarde aussi lorsque la page est masquée/quittée, notamment par l’aperçu iOS.
+  // Also save when the page is hidden/left, notably by the iOS file preview.
+  window.addEventListener("pagehide", save);
+  document.addEventListener("visibilitychange", () => {
+    if(document.visibilityState === "hidden") save();
+  });
+
+  // Au retour depuis l’aperçu (y compris via le cache arrière), restaure le brouillon.
+  // Restore the draft when returning from preview, including from the back-forward cache.
+  window.addEventListener("pageshow", event => {
+    if(event.persisted) load();
+    autoResizeAll();
+  });
+
   window.addEventListener("beforeprint", buildPrintSheet);
 
   rebuildGroups();
