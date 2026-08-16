@@ -8,6 +8,27 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ### Prévu
 - Corrections et évolutions futures après retour d’usage.
+## [1.0.1] — 2026-08-16
+
+### Corrigé / Fixed
+
+* Correction de la perte des données lors de l’utilisation de Boussole comme webapp sur iOS et iPadOS.
+* Fixed data loss when Boussole is used as an iOS/iPadOS web app.
+* Renforcement de la persistance locale avec une sauvegarde redondante `localStorage` + `IndexedDB`.
+* Improved local persistence with redundant `localStorage` + `IndexedDB` storage.
+* Restauration de la sauvegarde la plus récente au démarrage de l’application.
+* Restores the most recent saved state when the application starts.
+* Suppression de `sessionStorage` du mécanisme de persistance.
+* Removed `sessionStorage` from the persistence mechanism.
+* Sécurisation de la conservation des données lors des exports JSON et Markdown.
+* Improved data preservation during JSON and Markdown exports.
+
+### Technique / Technical
+
+* Demande de stockage persistant via l’API du navigateur lorsqu’elle est disponible.
+* Requests persistent browser storage when the API is available.
+* Migration compatible avec les données précédemment enregistrées par Boussole.
+* Maintains migration compatibility with data previously saved by Boussole.
 
 ## [1.0.0] — 2026-08-01
 
