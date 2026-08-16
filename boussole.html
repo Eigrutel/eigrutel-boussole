@@ -2,8 +2,8 @@
 Eigrutel Lab - Atelier d'outils libres pour la bande dessinée
 Programme conçu et développé par Simon Léturgie dans le cadre d'Eigrutel BD Academy.
 Nom : Boussole
-Version : 1.0.0
-Date : 01-08-2026
+Version : 1.0.1
+Date : 16-08-2026
 Code : GNU AGPL v3.0 ou version ultérieure.
 Documentation et modèles : CC BY-SA 4.0, sauf mention contraire.
 Marques, logos et signes distinctifs Eigrutel / Eigrutel Lab / Eigrutel BD Academy : réservés.
@@ -15,8 +15,8 @@ Marques, logos et signes distinctifs Eigrutel / Eigrutel Lab / Eigrutel BD Acade
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Boussole — Scénario</title>
 
-<link rel="icon" type="image/png" href="favicon/favboussole.png">
-<link rel="apple-touch-icon" sizes="180x180" href="favicon/favboussole.png">
+<link rel="icon" type="image/png" href="favicon/fav14.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/fav14.png">
 <meta name="apple-mobile-web-app-title" content="Boussole">
 
 <style>
@@ -795,7 +795,6 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
   const STORAGE_KEY = "boussoleBD.v10";
   const SECTIONS_KEY = "boussoleBD.sections.v10";
   const LANG_KEY = "boussoleBD.lang.v10";
-  const SESSION_KEY = "boussoleBD.session.v10";
 
   const I18N = {
     en:{
@@ -939,62 +938,218 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
   }
 
   /* =========================================================
-     SAUVEGARDE RÉSILIENTE / RESILIENT DRAFT STORAGE
+     PROJET LOCAL PERSISTANT / PERSISTENT LOCAL PROJECT
      ---------------------------------------------------------
-     Safari/iPadOS peut ouvrir un export dans une vue temporaire
-     et recharger la page au retour. Le brouillon est donc conservé
-     dans localStorage ET sessionStorage avant toute navigation.
+     Même logique générale que Personnages : la fiche courante
+     est enregistrée comme un projet complet à chaque saisie.
 
-     Safari/iPadOS may open an exported file in a temporary viewer
-     and reload the app when returning. The draft is therefore kept
-     in both localStorage and sessionStorage before any navigation.
+     Pour fiabiliser l’usage en webapp iOS/iPadOS, Boussole garde
+     deux copies indépendantes : localStorage + IndexedDB. Au
+     démarrage et au retour dans l’application, la copie valide la
+     plus récente est restaurée. sessionStorage n’est jamais utilisé.
+
+     Same general approach as Characters: the current sheet is
+     stored as a complete project after every edit.
+
+     For reliable iOS/iPadOS web-app use, Compass keeps two
+     independent copies: localStorage + IndexedDB. On launch and
+     when returning to the app, the newest valid copy is restored.
+     sessionStorage is never used.
      ========================================================= */
 
-  function setData(data, persist = true){
-    const clean = {...defaults, ...(data || {})};
-    fields.forEach(field => {
-      field.value = clean[field.dataset.field] || "";
-      autoResizeTextarea(field);
-    });
-    if(persist) save();
+  const PROJECT_STORAGE_KEY = "eigrutel_boussole_project_v1";
+  const LEGACY_STORAGE_KEY = STORAGE_KEY;
+  const DB_NAME = "eigrutel-boussole";
+  const DB_VERSION = 1;
+  const DB_STORE = "projects";
+  const DB_KEY = "current";
+
+  let isRestoringProject = false;
+  let projectState = {
+    version: 1,
+    updatedAt: "",
+    data: {...defaults}
+  };
+
+  function hasKnownFields(data){
+    return !!data && typeof data === "object" &&
+      Object.keys(defaults).some(key => Object.prototype.hasOwnProperty.call(data,key));
   }
 
-  function writeStorage(storage, key, value){
+  function hasMeaningfulData(data){
+    return hasKnownFields(data) &&
+      Object.keys(defaults).some(key => String(data[key] || "").trim() !== "");
+  }
+
+  function normalizeProject(candidate){
+    if(!candidate || typeof candidate !== "object") return null;
+    const data = candidate.data && typeof candidate.data === "object" ? candidate.data : candidate;
+    if(!hasKnownFields(data)) return null;
+    return {
+      version: Number(candidate.version) || 1,
+      updatedAt: typeof candidate.updatedAt === "string" ? candidate.updatedAt : "",
+      data: {...defaults, ...data}
+    };
+  }
+
+  function projectTime(project){
+    const t = Date.parse(project && project.updatedAt || "");
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  function collectProject(){
+    return {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      data: getData()
+    };
+  }
+
+  function applyProject(project){
+    const normalized = normalizeProject(project);
+    if(!normalized) return false;
+    isRestoringProject = true;
+    projectState = normalized;
+    fields.forEach(field => {
+      field.value = normalized.data[field.dataset.field] || "";
+      autoResizeTextarea(field);
+    });
+    isRestoringProject = false;
+    return true;
+  }
+
+  function readLocalProject(){
     try{
-      storage.setItem(key, value);
+      const raw = localStorage.getItem(PROJECT_STORAGE_KEY);
+      if(raw) return normalizeProject(JSON.parse(raw));
+    }catch(error){}
+    return null;
+  }
+
+  function readLegacyProject(){
+    try{
+      const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if(!raw) return null;
+      const legacy = JSON.parse(raw);
+      if(!hasKnownFields(legacy)) return null;
+      return {version:1,updatedAt:"",data:{...defaults,...legacy}};
+    }catch(error){
+      return null;
+    }
+  }
+
+  function writeLocalProject(project){
+    try{
+      localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(project));
       return true;
     }catch(error){
       return false;
     }
   }
 
-  function readStorage(storage, key){
+  function openProjectDB(){
+    return new Promise((resolve,reject) => {
+      if(!("indexedDB" in window)) return reject(new Error("IndexedDB unavailable"));
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE);
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("IndexedDB open failed"));
+    });
+  }
+
+  async function readIndexedProject(){
     try{
-      const raw = storage.getItem(key);
-      if(!raw) return null;
-      const data = JSON.parse(raw);
-      return data && typeof data === "object" ? data : null;
+      const db = await openProjectDB();
+      const value = await new Promise((resolve,reject) => {
+        const tx = db.transaction(DB_STORE,"readonly");
+        const req = tx.objectStore(DB_STORE).get(DB_KEY);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+      db.close();
+      return normalizeProject(value);
     }catch(error){
       return null;
     }
   }
 
-  function save(){
-    const serialized = JSON.stringify(getData());
-    writeStorage(localStorage, STORAGE_KEY, serialized);
-    writeStorage(sessionStorage, SESSION_KEY, serialized);
+  async function writeIndexedProject(project){
+    try{
+      const db = await openProjectDB();
+      await new Promise((resolve,reject) => {
+        const tx = db.transaction(DB_STORE,"readwrite");
+        tx.objectStore(DB_STORE).put(project,DB_KEY);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+      db.close();
+      return true;
+    }catch(error){
+      return false;
+    }
   }
 
-  function load(){
-    const data = readStorage(localStorage, STORAGE_KEY) || readStorage(sessionStorage, SESSION_KEY);
+  async function deleteIndexedProject(){
+    try{
+      const db = await openProjectDB();
+      await new Promise((resolve,reject) => {
+        const tx = db.transaction(DB_STORE,"readwrite");
+        tx.objectStore(DB_STORE).delete(DB_KEY);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+      db.close();
+    }catch(error){}
+  }
 
-    // Ne jamais écraser un brouillon par une fiche vide au chargement.
-    // Never overwrite a saved draft with an empty sheet while loading.
-    setData(data || defaults, false);
+  function persistProjectLocal(){
+    if(isRestoringProject) return;
+    projectState = collectProject();
+    writeLocalProject(projectState);
+    void writeIndexedProject(projectState);
+  }
 
-    // Si une copie de secours a été utilisée, on resynchronise les deux stockages.
-    // If the fallback copy was used, synchronize both storage locations again.
-    if(data) save();
+  function save(){
+    persistProjectLocal();
+  }
+
+  async function loadProject(){
+    const localProject = readLocalProject();
+    const indexedProject = await readIndexedProject();
+    const legacyProject = (!localProject && !indexedProject) ? readLegacyProject() : null;
+
+    const candidates = [localProject,indexedProject,legacyProject].filter(Boolean);
+    let best = null;
+    for(const candidate of candidates){
+      if(!best) best = candidate;
+      else if(projectTime(candidate) > projectTime(best)) best = candidate;
+      else if(projectTime(candidate) === projectTime(best) && hasMeaningfulData(candidate.data) && !hasMeaningfulData(best.data)) best = candidate;
+    }
+
+    if(best){
+      applyProject(best);
+      // Migration/résynchronisation des deux stockages persistants.
+      // Migrate/resynchronize both persistent storage backends.
+      if(!best.updatedAt) best.updatedAt = new Date().toISOString();
+      projectState = best;
+      writeLocalProject(best);
+      void writeIndexedProject(best);
+    }else{
+      applyProject({version:1,updatedAt:"",data:defaults});
+    }
+  }
+
+  async function requestPersistentStorage(){
+    try{
+      if(navigator.storage && navigator.storage.persist){
+        await navigator.storage.persist();
+      }
+    }catch(error){}
   }
 
   function slugify(value){
@@ -1124,11 +1279,11 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
   fields.forEach(field => {
     field.addEventListener("input", () => {
       autoResizeTextarea(field);
-      save();
+      persistProjectLocal();
     });
     field.addEventListener("change", () => {
       autoResizeTextarea(field);
-      save();
+      persistProjectLocal();
     });
   });
 
@@ -1160,7 +1315,7 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     const data = getData();
     const payload = {
       app: currentLang === "fr" ? "Boussole" : "Compass",
-      version:"1.0.0",
+      version:"1.0.1",
       language:currentLang,
       orientation: currentLang === "fr" ? "histoire BD" : "comic story",
       exportedAt:new Date().toISOString(),
@@ -1176,7 +1331,12 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     reader.onload = () => {
       try{
         const imported = JSON.parse(reader.result);
-        setData(imported.data || imported);
+        applyProject({
+          version:1,
+          updatedAt:new Date().toISOString(),
+          data: imported.data || imported
+        });
+        persistProjectLocal();
         showToast(I18N[currentLang].jsonImported);
       }catch(error){
         showToast(I18N[currentLang].jsonInvalid);
@@ -1189,10 +1349,11 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
   document.getElementById("resetApp").addEventListener("click", () => {
     const ok = window.confirm(I18N[currentLang].resetConfirm);
     if(!ok) return;
-    try{ localStorage.removeItem(STORAGE_KEY); }catch(error){}
-    try{ sessionStorage.removeItem(SESSION_KEY); }catch(error){}
-    setData(defaults, false);
-    save();
+    try{ localStorage.removeItem(PROJECT_STORAGE_KEY); }catch(error){}
+    try{ localStorage.removeItem(LEGACY_STORAGE_KEY); }catch(error){}
+    void deleteIndexedProject();
+    applyProject({version:1,updatedAt:new Date().toISOString(),data:defaults});
+    persistProjectLocal();
     showToast(I18N[currentLang].resetDone);
   });
 
@@ -1200,25 +1361,24 @@ textarea::placeholder{color:rgba(45,36,54,.42);}
     button.addEventListener('click', () => applyLanguage(button.dataset.lang));
   });
 
-  // Sauvegarde aussi lorsque la page est masquée/quittée, notamment par l’aperçu iOS.
-  // Also save when the page is hidden/left, notably by the iOS file preview.
-  window.addEventListener("pagehide", save);
-  document.addEventListener("visibilitychange", () => {
-    if(document.visibilityState === "hidden") save();
-  });
+  // Pas de sauvegarde sur pagehide/visibilitychange : iOS peut déclencher
+  // ces événements pendant le démontage de la webapp. Les données sont déjà
+  // persistées à chaque saisie, comme dans Personnages.
+  // No pagehide/visibilitychange saving: iOS may fire these events while
+  // tearing down the web app. Data is already persisted on every edit.
 
-  // Au retour depuis l’aperçu (y compris via le cache arrière), restaure le brouillon.
-  // Restore the draft when returning from preview, including from the back-forward cache.
-  window.addEventListener("pageshow", event => {
-    if(event.persisted) load();
-    autoResizeAll();
-  });
+  // Au retour dans la webapp, relire les stockages sans jamais sauvegarder
+  // l’état visuel transitoire de la page.
+  // On returning to the web app, reread persistent storage without ever
+  // saving the page's transient visual state.
+  window.addEventListener("pageshow", () => { void loadProject(); });
 
   window.addEventListener("beforeprint", buildPrintSheet);
 
   rebuildGroups();
   applyLanguage(currentLang);
-  load();
+  void requestPersistentStorage();
+  void loadProject();
   loadSectionState();
   autoResizeAll();
   window.addEventListener("resize", autoResizeAll);
